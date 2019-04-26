@@ -16,6 +16,8 @@
 		B322BE79227181E4001AB450 /* BaseTextViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B322BE78227181E4001AB450 /* BaseTextViewTests.m */; };
 		B322BE84227181E4001AB450 /* BaseTextViewUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = B322BE83227181E4001AB450 /* BaseTextViewUITests.m */; };
 		B322BE932271853C001AB450 /* BaseTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = B322BE922271853C001AB450 /* BaseTextView.m */; };
+		B3B83F332272B0BC00C90AAE /* image2.png in Resources */ = {isa = PBXBuildFile; fileRef = B3B83F322272B0BB00C90AAE /* image2.png */; };
+		B3B83F352272B0CB00C90AAE /* image1.png in Resources */ = {isa = PBXBuildFile; fileRef = B3B83F342272B0CB00C90AAE /* image1.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +56,8 @@
 		B322BE85227181E4001AB450 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B322BE912271853C001AB450 /* BaseTextView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseTextView.h; sourceTree = "<group>"; };
 		B322BE922271853C001AB450 /* BaseTextView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BaseTextView.m; sourceTree = "<group>"; };
+		B3B83F322272B0BB00C90AAE /* image2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image2.png; sourceTree = "<group>"; };
+		B3B83F342272B0CB00C90AAE /* image1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image1.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +115,8 @@
 				B322BE63227181B4001AB450 /* ViewController.m */,
 				B322BE65227181B4001AB450 /* Main.storyboard */,
 				B322BE68227181E2001AB450 /* Assets.xcassets */,
+				B3B83F322272B0BB00C90AAE /* image2.png */,
+				B3B83F342272B0CB00C90AAE /* image1.png */,
 				B322BE6A227181E2001AB450 /* LaunchScreen.storyboard */,
 				B322BE6D227181E2001AB450 /* Info.plist */,
 				B322BE6E227181E2001AB450 /* main.m */,
@@ -249,8 +255,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B322BE6C227181E2001AB450 /* LaunchScreen.storyboard in Resources */,
+				B3B83F352272B0CB00C90AAE /* image1.png in Resources */,
 				B322BE69227181E2001AB450 /* Assets.xcassets in Resources */,
 				B322BE67227181B4001AB450 /* Main.storyboard in Resources */,
+				B3B83F332272B0BC00C90AAE /* image2.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

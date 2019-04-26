@@ -54,6 +54,7 @@ typedef NS_ENUM(NSInteger, LimitType){
     return [predicate evaluateWithObject:self];
 }
 
+
 //对系统键盘做判断
 -(BOOL)isSystem{
     
@@ -156,7 +157,9 @@ typedef NS_ENUM(NSInteger, LimitType){
     self.placeholderLabel.frame = CGRectMake(5, 8, self.frame.size.width-5, self.frame.size.height-8);
     [self.placeholderLabel sizeToFit];
     [self.numberLabel sizeToFit];
-    [self refreshFrame];
+    if (self.maxLength > 0) {
+        [self refreshFrame];
+    }
 }
 
 #pragma mark —————Set—————
@@ -267,20 +270,18 @@ typedef NS_ENUM(NSInteger, LimitType){
         [self.placeholderLabel setHidden:NO];
     }
     
-    NSInteger num = [textView.text length] > _maxLength ? _maxLength : [textView.text length];
     if ([textView.text length] > self.maxLength && self.maxLength != 0 && textView.markedTextRange == nil) {
         textView.text = [textView.text substringToIndex:self.maxLength];
     }
     
-    if (self.maxLength) {
-        
+    if (self.maxLength > 0) {
+        NSInteger num = [textView.text length] > _maxLength ? _maxLength : [textView.text length];
         self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
-    }
-    
-    [self refreshFrame];
-    if (self.contentSize.height > self.bounds.size.height - self.numberView.frame.size.height) {
-
-        [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
+        [self refreshFrame];
+        if (self.contentSize.height > self.bounds.size.height - self.numberView.frame.size.height) {
+            
+            [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
+        }
     }
 }
 
@@ -344,9 +345,12 @@ typedef NS_ENUM(NSInteger, LimitType){
     [super setText:text];
     if (text.length>0) {
         [self.placeholderLabel setHidden:YES];
-        self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)[text length],(long)_maxLength];
-        [self.numberLabel sizeToFit];
-        [self refreshFrame];
+        if (self.maxLength > 0) {
+            NSInteger num = [text length] > _maxLength ? _maxLength : [text length];
+            self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+            [self.numberLabel sizeToFit];
+            [self refreshFrame];
+        }
     }
 }
 
@@ -361,14 +365,14 @@ typedef NS_ENUM(NSInteger, LimitType){
     
     // 输入中文
     if ((self.limitType & LimitTypeCHZN) == LimitTypeCHZN) {
-        if ([text isCHZN] || [text isSystem] || [text isPunctuation]) {
+        if ([text isCHZN] || [text isSystem] || [text isPunctuation] || [text isEqualToString:@"\n"]) {
             return YES;
         }
     }
     
     // 输入中文英文数字
     if ((self.limitType & LimitTypeCHZNOrNumOrLetter) == LimitTypeCHZNOrNumOrLetter) {
-        if ([text isNumber] || [text isCHZN] || [text isSystem] || [text isLetter] || [text isPunctuation]) {
+        if ([text isNumber] || [text isCHZN] || [text isSystem] || [text isLetter] || [text isPunctuation]  || [text isEqualToString:@"\n"]) {
             return YES;
         }
     }
