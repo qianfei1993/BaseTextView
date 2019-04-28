@@ -44,6 +44,7 @@
     // 限制输入中文
     self.chTextView.inputType = TextViewInputTypeCHZN;
     self.chTextView.placeholderLabel.text = @"请输入一点什么吧";
+    self.chTextView.text = @"邃无端喜研剑道，1212";
     self.chTextView.isFixed = NO;// numberLabel跟随内容滚动
     self.chTextView.maxLength = 2000;// 显示numberLabel
     // 设置numberLabel样式
