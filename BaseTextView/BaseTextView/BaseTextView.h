@@ -29,6 +29,12 @@ typedef NS_ENUM(NSInteger, TextViewInputType){
 @property (nonatomic, assign) TextViewInputType inputType;
 
 /**
+ *textViewPlaceholderLabel（不设置则默认显示值）
+ *
+ */
+@property (nonatomic,strong) UILabel *placeholderLabel;
+
+/**
  *textView允许输入的最大长度 默认不限制,（有值则显示numberLabel）
  *
  */
@@ -46,11 +52,6 @@ typedef NS_ENUM(NSInteger, TextViewInputType){
  */
 @property (nonatomic,assign) BOOL isFixed;
 
-/**
- *textViewPlaceholderLabel（不设置则默认显示值）
- *
- */
-@property (nonatomic,strong) UILabel *placeholderLabel;
 
 /**
  *textView:设置行间距
@@ -82,12 +83,10 @@ typedef NS_ENUM(NSInteger, TextViewInputType){
 
 @property (nonatomic, copy) void (^didChangeSelectionBlock)(UITextView *textView);
 /*
- @property (nonatomic, copy) BOOL (^shouldInteractWithURLBlock)(UITextView *textView, NSURL *url, NSRange range, UITextItemInteraction interaction);
- 
- @property (nonatomic, copy) BOOL (^shouldInteractWithTextAttachmentBlock)(UITextView *textView, NSTextAttachment *textAttachment, NSRange range, UITextItemInteraction interaction);
- */
+@property (nonatomic, copy) BOOL (^shouldInteractWithURLBlock)(UITextView *textView, NSURL *url, NSRange range, UITextItemInteraction interaction);
 
-
+@property (nonatomic, copy) BOOL (^shouldInteractWithTextAttachmentBlock)(UITextView *textView, NSTextAttachment *textAttachment, NSRange range, UITextItemInteraction interaction);
+*/
 @end
 
 NS_ASSUME_NONNULL_END

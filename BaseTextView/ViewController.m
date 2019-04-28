@@ -11,10 +11,9 @@
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UIView *touchView;
 
-
 // 不做输入限制
 @property (weak, nonatomic) IBOutlet BaseTextView *normalTextView;
-//
+
 // 限制输入中文
 @property (weak, nonatomic) IBOutlet BaseTextView *chTextView;
 
@@ -37,19 +36,20 @@
     self.normalTextView.lineSpacing = 20;// 设置行间距
     self.normalTextView.indentNum = 2; // 设置首行缩进
     self.normalTextView.maxLength = 2000;// 显示numberLabel
+    // 设置numberLabel样式
+    self.normalTextView.numberLabel.font = [UIFont systemFontOfSize:12];
+    self.normalTextView.numberLabel.textColor = [UIColor redColor];
     self.normalTextView.didChangeBlock = ^(UITextView * _Nonnull textView) {
         NSLog(@"normalTextView=%@",textView.text);
     };
     
+    
     // 限制输入中文
     self.chTextView.inputType = TextViewInputTypeCHZN;
     self.chTextView.placeholderLabel.text = @"请输入一点什么吧";
-    self.chTextView.text = @"邃无端喜研剑道，1212";
     self.chTextView.isFixed = NO;// numberLabel跟随内容滚动
+    self.chTextView.text = @"邃无端喜研剑道,123"; //设置不合法字符串会被重置
     self.chTextView.maxLength = 2000;// 显示numberLabel
-    // 设置numberLabel样式
-    self.chTextView.numberLabel.font = [UIFont systemFontOfSize:12];
-    self.chTextView.numberLabel.textColor = [UIColor redColor];
     self.chTextView.didChangeBlock = ^(UITextView * _Nonnull textView) {
         NSLog(@"chTextView=%@",textView.text);
     };
@@ -57,15 +57,13 @@
     
     // 限制输入中英文数字，使用默认设置
     self.allTextView.inputType = TextViewInputTypeCHZNOrNumberOrLetter;
-    self.allTextView.text = @"邃无端喜研剑道，一心追求剑境臻上，欲破除常规、开展新路，因心思专注而有大成，于峰壁间留下单锋剑意，遂成单锋剑之源头。但后来却被卷入谜般的儒门灭佾惨案，至此不知所踪。后被墨倾池寻回，再入江湖。\n邃无端，即是深邃无尽之意；号隐锋深鸣，则是形容无端锋芒含藏，却因天资异禀隐藏不尽，而已鸣动难抑，类似潜龙暗动的意象，而后他终将飞升而出。\n无端的诗号，则是配合他的直性及剑境天赋；长久欲寻大道却难辨虚实，如此便依凭正心而往，什么样的巅峰功名都非是永久不变的，而他永远只专于剑道本身，不为外物所扰。";
-    
+    self.allTextView.indentNum = 2; // 设置首行缩进
+    self.allTextView.text = @"邃无端喜研剑道，一心追求剑境臻上，欲破除常规开展新路，因心思专注而有大成，于峰壁间留下单锋剑意，遂成单锋剑之源头。但后来却被卷入谜般的儒门灭佾惨案，至此不知所踪。后被墨倾池寻回，再入江湖。邃无端，即是深邃无尽之意；号隐锋深鸣，则是形容无端锋芒含藏，却因天资异禀隐藏不尽，而已鸣动难抑，类似潜龙暗动的意象，而后他终将飞升而出。无端的诗号，则是配合他的直性及剑境天赋；长久欲寻大道却难辨虚实，如此便依凭正心而往，什么样的巅峰功名都非是永久不变的，而他永远只专于剑道本身，不为外物所扰。"; // 设置默认字符串
     // 内容发生变化的回调
     self.allTextView.didChangeBlock = ^(UITextView * _Nonnull textView) {
         NSLog(@"normalTextView=%@",textView.text);
     };
-
 }
-
 
 - (void)setupWithTouchView{
     
@@ -75,9 +73,9 @@
     self.touchView.userInteractionEnabled = YES;
     [self.touchView addGestureRecognizer:tap];
 }
+
 - (void)tapAction:(UITapGestureRecognizer*)tap{
     [self.view endEditing:YES];
 }
-
 
 @end

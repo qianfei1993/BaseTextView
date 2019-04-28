@@ -84,9 +84,9 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="allTextView" destination="Gt0-dN-lam" id="dwa-oa-Rpz"/>
-                        <outlet property="chTextView" destination="FzJ-nJ-dkk" id="ckB-VY-jY3"/>
-                        <outlet property="normalTextView" destination="fzQ-rc-lOC" id="67n-ff-qZ7"/>
+                        <outlet property="allTextView" destination="Gt0-dN-lam" id="Yw5-k3-Ghd"/>
+                        <outlet property="chTextView" destination="FzJ-nJ-dkk" id="6H0-A6-bXH"/>
+                        <outlet property="normalTextView" destination="fzQ-rc-lOC" id="NPS-mO-xnc"/>
                         <outlet property="touchView" destination="Ab0-EV-x67" id="Pea-xb-ofy"/>
                     </connections>
                 </viewController>

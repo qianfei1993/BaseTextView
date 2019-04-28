@@ -65,7 +65,7 @@ typedef NS_ENUM(NSInteger, LimitType){
 // 中文，标点，数字，英文
 - (BOOL)iSCHZNOrNumOrLetter{
     
-    NSString *regexStr = @"^[[:punct:]0-9A-Za-z\\u4e00-\\u9fa5]+$";
+    NSString *regexStr = @"^[[:punct:]0-9A-Za-z\\u4e00-\\u9fa5 ]+$";
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", regexStr];
     return [predicate evaluateWithObject:self];
 }
@@ -170,10 +170,9 @@ typedef NS_ENUM(NSInteger, LimitType){
 }
 
 -(void)layoutSubviews{
-    
+
     self.placeholderLabel.frame = CGRectMake(5, 8, self.frame.size.width-5, self.frame.size.height-8);
     [self.placeholderLabel sizeToFit];
-    [self.numberLabel sizeToFit];
     if (self.maxLength > 0) {
         [self refreshFrame];
     }
@@ -208,7 +207,26 @@ typedef NS_ENUM(NSInteger, LimitType){
 -(void)setMaxLength:(NSUInteger)maxLength{
     
     _maxLength = maxLength;
-    [self updateWithMaxLengthAndLineSpacing];
+    if (self.maxLength > 0) {
+        NSInteger num = self.text.length > _maxLength ? _maxLength : self.text.length;
+        self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+        [self refreshFrame];
+    }
+}
+
+- (void)setIsFixed:(BOOL)isFixed{
+    
+    _isFixed = isFixed;
+}
+
+- (void)setLineSpacing:(CGFloat)lineSpacing{
+    
+    _lineSpacing = lineSpacing;
+}
+
+- (void)setIndentNum:(NSUInteger)indentNum{
+    
+    _indentNum = indentNum;
 }
 
 - (void)setNumberLabel:(UILabel *)numberLabel{
@@ -282,23 +300,7 @@ typedef NS_ENUM(NSInteger, LimitType){
         self.didChangeBlock(textView);
     }
     
-    if ([self.text length]>0) {
-        [self.placeholderLabel setHidden:YES];
-    }else{
-        [self.placeholderLabel setHidden:NO];
-    }
-    
-    if ([textView.text length] > self.maxLength && self.maxLength > 0 && textView.markedTextRange == nil) {
-        textView.text = [textView.text substringToIndex:self.maxLength];
-    }
-    [self updateWithMaxLengthAndLineSpacing];
-    
-    if (self.contentSize.height > self.bounds.size.height) {
-        [UIView animateWithDuration:0.15 animations:^{
-            [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
-        }];
-    }
-
+    [self updateWithMaxLengthAndLineSpacing:textView];
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView{
@@ -316,23 +318,23 @@ typedef NS_ENUM(NSInteger, LimitType){
     return originalRect;
 }
 
-
 /*
- -(BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction API_AVAILABLE(ios(10.0)){
+-(BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction API_AVAILABLE(ios(10.0)){
+    
+    if (self.shouldInteractWithURLBlock) {
+        return self.shouldInteractWithURLBlock(textView, URL, characterRange, interaction);
+    }
+    return YES;
+}
+-(BOOL)textView:(UITextView *)textView shouldInteractWithTextAttachment:(NSTextAttachment *)textAttachment inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction API_AVAILABLE(ios(10.0)){
+    
+    if (self.shouldInteractWithTextAttachmentBlock) {
+        return self.shouldInteractWithTextAttachmentBlock(textView, textAttachment, characterRange, interaction);
+    }
+    return YES;
+}
+*/
  
- if (self.shouldInteractWithURLBlock) {
- return self.shouldInteractWithURLBlock(textView, URL, characterRange, interaction);
- }
- return YES;
- }
- -(BOOL)textView:(UITextView *)textView shouldInteractWithTextAttachment:(NSTextAttachment *)textAttachment inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction API_AVAILABLE(ios(10.0)){
- 
- if (self.shouldInteractWithTextAttachmentBlock) {
- return self.shouldInteractWithTextAttachmentBlock(textView, textAttachment, characterRange, interaction);
- }
- return YES;
- }
- */
 #pragma mark - private
 - (void)refreshFrame{
     
@@ -368,17 +370,19 @@ typedef NS_ENUM(NSInteger, LimitType){
 
 - (void)setText:(NSString *)text{
     [super setText:text];
+    NSLog(@"%@",text);
     if (text.length > 0) {
+        if (self.maxLength && text.length > self.maxLength) {
+            text = [text substringToIndex:self.maxLength];
+        }
         if ([self suitableInput:text]) {
-            
             [self.placeholderLabel setHidden:YES];
             // 设置行间距
-            if (self.maxLength > 0 && self.lineSpacing > 0) {
-                if (text.length > self.maxLength) {
-                    text = [text substringToIndex:self.maxLength];
-                }
+            if (self.lineSpacing || self.indentNum) {
                 NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-                paragraphStyle.lineSpacing = self.lineSpacing;
+                if (self.lineSpacing) {
+                    paragraphStyle.lineSpacing = self.lineSpacing;
+                }
                 if (self.indentNum) {
                     paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
                 }
@@ -387,96 +391,61 @@ typedef NS_ENUM(NSInteger, LimitType){
                                              NSParagraphStyleAttributeName:paragraphStyle
                                              };
                 self.attributedText = [[NSAttributedString alloc] initWithString:text attributes:attributes];
-                
-                NSInteger num = text.length > _maxLength ? _maxLength : text.length;
-                self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
-                [self.numberLabel sizeToFit];
-                [self refreshFrame];
-                
-            }else if (self.maxLength > 0){
-                
-                if (text.length > self.maxLength) {
-                    text = [text substringToIndex:self.maxLength];
-                }
-                NSInteger num = text.length > _maxLength ? _maxLength : text.length;
-                self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
-                [self refreshFrame];
-                
-            }else if (self.lineSpacing > 0){
-                
-                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-                paragraphStyle.lineSpacing = self.lineSpacing;
-                if (self.indentNum) {
-                    paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
-                }
-                NSDictionary *attributes = @{
-                                             NSFontAttributeName:self.font,
-                                             NSParagraphStyleAttributeName:paragraphStyle
-                                             };
-                self.attributedText = [[NSAttributedString alloc] initWithString:text attributes:attributes];
+            }else{
+                [super setText:text];
             }
         }else{
-            self.text = @"";
+            
+            [self.placeholderLabel setHidden:NO];
+            [super setText:@""];
         }
     }else{
         [self.placeholderLabel setHidden:NO];
     }
+    if (self.maxLength > 0) {
+        NSInteger num = self.text.length > _maxLength ? _maxLength : self.text.length;
+        self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+        [self refreshFrame];
+    }
 }
 
-- (void)updateWithMaxLengthAndLineSpacing{
+- (void)updateWithMaxLengthAndLineSpacing:(UITextView*)textView{
     
-    if (self.text.length > 0) {
-        if ([self suitableInput:self.text]) {
-            
-            [self.placeholderLabel setHidden:YES];
-            // 设置行间距
-            if (self.maxLength > 0 && self.lineSpacing > 0) {
-                if (self.text.length > self.maxLength) {
-                    self.text = [self.text substringToIndex:self.maxLength];
-                }
-                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-                paragraphStyle.lineSpacing = self.lineSpacing;
-                if (self.indentNum) {
-                    paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
-                }
-                NSDictionary *attributes = @{
-                                             NSFontAttributeName:self.font,
-                                             NSParagraphStyleAttributeName:paragraphStyle
-                                             };
-                self.attributedText = [[NSAttributedString alloc] initWithString:self.text attributes:attributes];
-                
-                NSInteger num = self.text.length > _maxLength ? _maxLength : self.text.length;
-                self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
-                [self.numberLabel sizeToFit];
-                [self refreshFrame];
-                
-            }else if (self.maxLength > 0){
-                
-                if (self.text.length > self.maxLength) {
-                    self.text = [self.text substringToIndex:self.maxLength];
-                }
-                NSInteger num = self.text.length > _maxLength ? _maxLength : self.text.length;
-                self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
-                [self refreshFrame];
-                
-            }else if (self.lineSpacing > 0){
-                
-                NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-                paragraphStyle.lineSpacing = self.lineSpacing;
-                if (self.indentNum) {
-                    paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
-                }
-                NSDictionary *attributes = @{
-                                             NSFontAttributeName:self.font,
-                                             NSParagraphStyleAttributeName:paragraphStyle
-                                             };
-                self.attributedText = [[NSAttributedString alloc] initWithString:self.text attributes:attributes];
-            }
-        }else{
-            self.text = @"";
-        }
+    if ([textView.text length] > 0) {
+        [self.placeholderLabel setHidden:YES];
     }else{
         [self.placeholderLabel setHidden:NO];
+    }
+    
+    if (textView.text.length > self.maxLength && self.maxLength > 0 && textView.markedTextRange == nil) {
+        textView.text = [textView.text substringToIndex:self.maxLength];
+    }
+    // 设置行间距
+    if (self.lineSpacing || self.indentNum) {
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        if (self.lineSpacing) {
+            paragraphStyle.lineSpacing = self.lineSpacing;
+        }
+        if (self.indentNum) {
+            paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+        }
+        NSDictionary *attributes = @{
+                                     NSFontAttributeName:self.font,
+                                     NSParagraphStyleAttributeName:paragraphStyle
+                                     };
+        self.attributedText = [[NSAttributedString alloc] initWithString:textView.text attributes:attributes];
+    }
+    
+    if (self.maxLength) {
+        NSInteger num = textView.text.length > _maxLength ? _maxLength : textView.text.length;
+        self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+        [self refreshFrame];
+    }
+    
+    if (self.contentSize.height > self.bounds.size.height) {
+        [UIView animateWithDuration:0.15 animations:^{
+            [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
+        }];
     }
 }
 
@@ -490,14 +459,14 @@ typedef NS_ENUM(NSInteger, LimitType){
     }
     
     // 输入中文
-    if ((self.limitType & LimitTypeCHZN) == LimitTypeCHZN) {
+    if (self.limitType == LimitTypeCHZN) {
         if ([text isCHZN] || [text isSystem] || [text isPunctuation] || [text isEqualToString:@"\n"] || [text iSCHZNAndPunctuation]) {
             return YES;
         }
     }
     
     // 输入中文英文数字
-    if ((self.limitType & LimitTypeCHZNOrNumOrLetter) == LimitTypeCHZNOrNumOrLetter) {
+    if (self.limitType == LimitTypeCHZNOrNumOrLetter) {
         if ([text isNumber] || [text isCHZN] || [text isSystem] || [text isLetter] || [text isPunctuation]  || [text isEqualToString:@"\n"] || [text iSCHZNOrNumOrLetter]) {
             return YES;
         }
