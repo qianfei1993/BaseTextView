@@ -14,10 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
  * TextField限制输入类型
  *
  */
-typedef NS_ENUM(NSInteger, InputType){
-    InputTypeNormal,                // 不做输入限制
-    InputTypeCHZN,                  // 限制输入中文
-    InputTypeCHZNOrNumberOrLetter   // 限制输入中文-字母-数字
+typedef NS_ENUM(NSInteger, TextViewInputType){
+    TextViewInputTypeNormal,                // 不做输入限制
+    TextViewInputTypeCHZN,                  // 限制输入中文
+    TextViewInputTypeCHZNOrNumberOrLetter   // 限制输入中文-字母-数字
 };
 
 @interface BaseTextView : UITextView
@@ -26,13 +26,13 @@ typedef NS_ENUM(NSInteger, InputType){
  *textView输入类型
  *
  */
-@property (nonatomic, assign) InputType inputType;
+@property (nonatomic, assign) TextViewInputType inputType;
 
 /**
  *textView允许输入的最大长度 默认不限制,（有值则显示numberLabel）
  *
  */
-@property (nonatomic,assign) NSInteger maxLength;
+@property (nonatomic,assign) NSUInteger maxLength;
 
 /**
  *textView显示当前输入长度和总长度（设置值则显示否则不显示）
@@ -51,6 +51,18 @@ typedef NS_ENUM(NSInteger, InputType){
  *
  */
 @property (nonatomic,strong) UILabel *placeholderLabel;
+
+/**
+ *textView:设置行间距
+ *
+ */
+@property (nonatomic,assign) CGFloat lineSpacing;
+
+/**
+ *textView:首行缩进字符数（默认不缩进）
+ *
+ */
+@property (nonatomic,assign) NSUInteger indentNum;
 
 /**
  *代理转Block

@@ -85,8 +85,8 @@
                     </view>
                     <connections>
                         <outlet property="allTextView" destination="Gt0-dN-lam" id="dwa-oa-Rpz"/>
-                        <outlet property="chTextView" destination="FzJ-nJ-dkk" id="Lmy-XC-vql"/>
-                        <outlet property="normalTextView" destination="fzQ-rc-lOC" id="LmW-FL-eQh"/>
+                        <outlet property="chTextView" destination="FzJ-nJ-dkk" id="ckB-VY-jY3"/>
+                        <outlet property="normalTextView" destination="fzQ-rc-lOC" id="67n-ff-qZ7"/>
                         <outlet property="touchView" destination="Ab0-EV-x67" id="Pea-xb-ofy"/>
                     </connections>
                 </viewController>

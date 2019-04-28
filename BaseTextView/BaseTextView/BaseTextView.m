@@ -81,6 +81,10 @@ typedef NS_ENUM(NSInteger, LimitType){
 
 @implementation BaseTextView
 
+- (void)awakeFromNib{
+    [super awakeFromNib];
+    [self initialize];
+}
 
 -(instancetype)initWithFrame:(CGRect)frame{
     
@@ -122,8 +126,7 @@ typedef NS_ENUM(NSInteger, LimitType){
     self.clipsToBounds = YES;
     self.delegate = self;
     self.isFixed = YES;
-    
-    self.inputType = InputTypeNormal;
+    self.inputType = TextViewInputTypeNormal;
     
     if (!self.placeholderLabel) {
         self.placeholderLabel = [[UILabel alloc]initWithFrame:CGRectMake(5, 8, self.frame.size.width-5, self.frame.size.height-8)];
@@ -141,7 +144,6 @@ typedef NS_ENUM(NSInteger, LimitType){
         self.numberView.backgroundColor = self.backgroundColor;
         [self addSubview:self.numberView];
         
-        
         self.numberLabel = [[UILabel alloc]initWithFrame:CGRectZero];
         self.numberLabel.backgroundColor = [UIColor clearColor];
         self.numberLabel.font = [UIFont systemFontOfSize:15];
@@ -149,8 +151,8 @@ typedef NS_ENUM(NSInteger, LimitType){
         self.numberLabel.textAlignment = NSTextAlignmentRight;
         [self.numberView addSubview:self.numberLabel];
     }
-}
 
+}
 
 -(void)layoutSubviews{
     
@@ -164,16 +166,16 @@ typedef NS_ENUM(NSInteger, LimitType){
 
 #pragma mark —————Set—————
 // 设置输入类型 1.确定键盘类型，2.输入类型限制，3.输入长度限制
-- (void)setInputType:(InputType)inputType{
+- (void)setInputType:(TextViewInputType)inputType{
     _inputType = inputType;
     switch (_inputType) {
-        case InputTypeNormal:
+        case TextViewInputTypeNormal:
             self.limitType = LimitTypeNone;
             break;
-        case InputTypeCHZN:
+        case TextViewInputTypeCHZN:
             self.limitType = LimitTypeCHZN;
             break;
-        case InputTypeCHZNOrNumberOrLetter:
+        case TextViewInputTypeCHZNOrNumberOrLetter:
             self.limitType = LimitTypeCHZNOrNumOrLetter;
             break;
         default:
@@ -188,10 +190,10 @@ typedef NS_ENUM(NSInteger, LimitType){
     _placeholderLabel = placeholderLabel;
 }
 
--(void)setMaxLength:(NSInteger)maxLength{
+-(void)setMaxLength:(NSUInteger)maxLength{
     
     _maxLength = maxLength;
-    self.numberLabel.text = [NSString stringWithFormat:@"0/%ld",(long)_maxLength];
+    [self updateWithMaxLengthAndLineSpacing];
 }
 
 - (void)setNumberLabel:(UILabel *)numberLabel{
@@ -235,6 +237,7 @@ typedef NS_ENUM(NSInteger, LimitType){
     if (self.shouldChangeTextInRangeBlock) {
         return self.shouldChangeTextInRangeBlock(textView, range, text);
     }
+    
     // 是否允许换行
     if (self.returnKeyType != UIReturnKeyDefault) {
         if ([text isEqualToString:@"\n"]) {
@@ -270,19 +273,46 @@ typedef NS_ENUM(NSInteger, LimitType){
         [self.placeholderLabel setHidden:NO];
     }
     
-    if ([textView.text length] > self.maxLength && self.maxLength != 0 && textView.markedTextRange == nil) {
+    if ([textView.text length] > self.maxLength && self.maxLength > 0 && textView.markedTextRange == nil) {
         textView.text = [textView.text substringToIndex:self.maxLength];
     }
+    [self updateWithMaxLengthAndLineSpacing];
+    
+    if (self.contentSize.height > self.bounds.size.height) {
+        [UIView animateWithDuration:0.15 animations:^{
+            [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
+        }];
+    }
+    
+    
+    /*
+     // 设置行间距
+    if (self.lineSpacing) {
+        // textview 改变字体的行间距
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        
+        paragraphStyle.lineSpacing = self.lineSpacing;// 字体的行间距
+        if (self.indentNum) {
+            paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+        }
+        NSDictionary *attributes = @{
+                                     NSFontAttributeName:self.font,
+                                     NSParagraphStyleAttributeName:paragraphStyle
+                                     };
+        textView.attributedText = [[NSAttributedString alloc] initWithString:textView.text attributes:attributes];
+    }
+    
     
     if (self.maxLength > 0) {
         NSInteger num = [textView.text length] > _maxLength ? _maxLength : [textView.text length];
         self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
         [self refreshFrame];
-        if (self.contentSize.height > self.bounds.size.height - self.numberView.frame.size.height) {
+        if (self.contentSize.height > self.bounds.size.height) {
             
             [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
         }
     }
+    */
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)textView{
@@ -292,6 +322,12 @@ typedef NS_ENUM(NSInteger, LimitType){
     }
 }
 
+- (CGRect)caretRectForPosition:(UITextPosition *)position {
+    CGRect originalRect = [super caretRectForPosition:position];
+    originalRect.size.height = self.font.lineHeight + 2;
+    originalRect.size.width = 2.5;
+    return originalRect;
+}
 /*
  -(BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange interaction:(UITextItemInteraction)interaction API_AVAILABLE(ios(10.0)){
  
@@ -343,17 +379,109 @@ typedef NS_ENUM(NSInteger, LimitType){
 
 - (void)setText:(NSString *)text{
     [super setText:text];
-    if (text.length>0) {
+    if (text.length > 0) {
         [self.placeholderLabel setHidden:YES];
-        if (self.maxLength > 0) {
-            NSInteger num = [text length] > _maxLength ? _maxLength : [text length];
+        
+        // 设置行间距
+        if (self.maxLength > 0 && self.lineSpacing > 0) {
+            if (text.length > self.maxLength) {
+                text = [text substringToIndex:self.maxLength];
+            }
+            NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+            paragraphStyle.lineSpacing = self.lineSpacing;
+            if (self.indentNum) {
+                paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+            }
+            NSDictionary *attributes = @{
+                                         NSFontAttributeName:self.font,
+                                         NSParagraphStyleAttributeName:paragraphStyle
+                                         };
+            self.attributedText = [[NSAttributedString alloc] initWithString:text attributes:attributes];
+            
+            NSInteger num = text.length > _maxLength ? _maxLength : text.length;
             self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
             [self.numberLabel sizeToFit];
             [self refreshFrame];
+            
+        }else if (self.maxLength > 0){
+            
+            if (text.length > self.maxLength) {
+                text = [text substringToIndex:self.maxLength];
+            }
+            NSInteger num = text.length > _maxLength ? _maxLength : text.length;
+            self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+            [self refreshFrame];
+            
+        }else if (self.lineSpacing > 0){
+            
+            NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+            paragraphStyle.lineSpacing = self.lineSpacing;
+            if (self.indentNum) {
+                paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+            }
+            NSDictionary *attributes = @{
+                                         NSFontAttributeName:self.font,
+                                         NSParagraphStyleAttributeName:paragraphStyle
+                                         };
+            self.attributedText = [[NSAttributedString alloc] initWithString:text attributes:attributes];
         }
+    }else{
+        [self.placeholderLabel setHidden:NO];
     }
 }
 
+- (void)updateWithMaxLengthAndLineSpacing{
+    
+    if (self.text.length > 0) {
+        [self.placeholderLabel setHidden:YES];
+        
+        // 设置行间距
+        if (self.maxLength > 0 && self.lineSpacing > 0) {
+            if (self.text.length > self.maxLength) {
+                self.text = [self.text substringToIndex:self.maxLength];
+            }
+            NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+            paragraphStyle.lineSpacing = self.lineSpacing;
+            if (self.indentNum) {
+                paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+            }
+            NSDictionary *attributes = @{
+                                         NSFontAttributeName:self.font,
+                                         NSParagraphStyleAttributeName:paragraphStyle
+                                         };
+            self.attributedText = [[NSAttributedString alloc] initWithString:self.text attributes:attributes];
+            
+            NSInteger num = self.text.length > _maxLength ? _maxLength : self.text.length;
+            self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+            [self.numberLabel sizeToFit];
+            [self refreshFrame];
+            
+        }else if (self.maxLength > 0){
+            
+            if (self.text.length > self.maxLength) {
+                self.text = [self.text substringToIndex:self.maxLength];
+            }
+            NSInteger num = self.text.length > _maxLength ? _maxLength : self.text.length;
+            self.numberLabel.text = [NSString stringWithFormat:@"%ld/%ld",(long)num,(long)_maxLength];
+            [self refreshFrame];
+            
+        }else if (self.lineSpacing > 0){
+            
+            NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+            paragraphStyle.lineSpacing = self.lineSpacing;
+            if (self.indentNum) {
+                paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+            }
+            NSDictionary *attributes = @{
+                                         NSFontAttributeName:self.font,
+                                         NSParagraphStyleAttributeName:paragraphStyle
+                                         };
+            self.attributedText = [[NSAttributedString alloc] initWithString:self.text attributes:attributes];
+        }
+    }else{
+        [self.placeholderLabel setHidden:NO];
+    }
+}
 
 // 是否允许输入
 -(BOOL)suitableInput:(NSString *)text{
