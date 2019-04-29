@@ -427,13 +427,13 @@ typedef NS_ENUM(NSInteger, LimitType){
             paragraphStyle.lineSpacing = self.lineSpacing;
         }
         if (self.indentNum) {
-            paragraphStyle.firstLineHeadIndent = self.font.pointSize * self.indentNum;
+            paragraphStyle.firstLineHeadIndent = textView.font.pointSize * self.indentNum;
         }
         NSDictionary *attributes = @{
-                                     NSFontAttributeName:self.font,
+                                     NSFontAttributeName:textView.font,
                                      NSParagraphStyleAttributeName:paragraphStyle
                                      };
-        self.attributedText = [[NSAttributedString alloc] initWithString:textView.text attributes:attributes];
+        textView.attributedText = [[NSAttributedString alloc] initWithString:textView.text attributes:attributes];
     }
     
     if (self.maxLength) {
@@ -443,9 +443,8 @@ typedef NS_ENUM(NSInteger, LimitType){
     }
     
     if (self.contentSize.height > self.bounds.size.height) {
-        [UIView animateWithDuration:0.15 animations:^{
-            [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
-        }];
+       
+        [self setContentOffset:CGPointMake(0, self.contentSize.height- self.bounds.size.height) animated:NO];
     }
 }
 
